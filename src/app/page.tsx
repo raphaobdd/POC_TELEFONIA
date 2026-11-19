@@ -96,9 +96,9 @@ export default function Home() {
       <div className="mx-auto max-w-[850px] pb-20">
         <BlurFade duration={animate ? 0.45 : 0} offset={animate ? 8 : 0} blur={animate ? "6px" : "0px"}>
           <section className="pb-9 pt-12 sm:pb-11 sm:pt-16">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--t-accent-border)] bg-[var(--t-accent-bg)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-[var(--t-accent)] sm:text-[11px]"><span className="size-1.5 rounded-full bg-[#e6331b]" /> Processamento de faturas</div>
-            <h1 className="font-heading max-w-[760px] text-[clamp(2.25rem,5vw,4rem)] font-bold leading-[1.12] tracking-[-.045em]">Dados de telefonia, <span className="text-[var(--t-accent)]">prontos para análise.</span></h1>
-            <p className="mt-5 max-w-[640px] text-[15px] leading-7 text-[var(--t-muted)] sm:text-lg">Importe suas faturas TXT para demonstrar o fluxo de conversão. Por enquanto, o Excel gerado usa o fechamento mensal fixo de abril de 2026.</p>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--t-accent-border)] bg-[var(--t-accent-bg)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-[var(--t-accent)] sm:text-[11px]"><span className="size-1.5 rounded-full bg-[#e6331b]" /> Gestão de telefonia corporativa</div>
+            <h1 className="font-heading max-w-[760px] text-[clamp(2.25rem,5vw,4rem)] font-bold leading-[1.12] tracking-[-.045em]">Mais controle. <span className="text-[var(--t-accent)]">Menos complexidade.</span></h1>
+            <p className="mt-5 max-w-[640px] text-[15px] leading-7 text-[var(--t-muted)] sm:text-lg">Simplifique o processamento das faturas de telefonia e centralize suas informações em relatórios consolidados, facilitando a gestão de custos e o fechamento mensal.</p>
           </section>
         </BlurFade>
 
