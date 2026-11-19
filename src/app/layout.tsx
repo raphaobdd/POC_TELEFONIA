@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono, DM_Sans, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Gestão de Telefonia | KAEFER RIP",
-  description: "Baixe o fechamento mensal de telefonia RIP de abril de 2026 em Excel.",
+  description: "Ferramenta interna KAEFER RIP para converter faturas de telefonia em TXT para planilhas Excel.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

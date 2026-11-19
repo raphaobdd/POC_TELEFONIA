@@ -1,7 +1,7 @@
-﻿# Fechamento mensal fixo
+﻿# Demonstração do fechamento mensal
 
-O download principal é `FechamentoMensal_RIP_Vencimento_2026-04.xlsx`, disponível diretamente na página inicial. O arquivo contém uma única aba, `Fechamento Mensal`, com as mesmas duas colunas, categorias, ordem e valores do CSV `FechamentoMensal_RIP_Vencimento_2026-04_20260911154202539 (1).csv` fornecido pelo usuário. O total é R$ 35.581,24.
+A tela mantém o fluxo de seleção de 1 a 10 arquivos TXT, processamento e botão para baixar o Excel. Essa etapa apresenta a funcionalidade ao cliente; a regra financeira definitiva ainda será desenvolvida.
 
-Os dados são fixos para abril de 2026. O XLSX melhora a apresentação com cabeçalhos destacados, linhas alternadas, números monetários formatados, valores negativos em vermelho, total em destaque e configuração de impressão.
+Por enquanto, o XLSX gerado é sempre o mesmo: uma única aba `Fechamento Mensal`, com as duas colunas, categorias, ordem e valores do CSV `FechamentoMensal_RIP_Vencimento_2026-04_20260911154202539 (1).csv` fornecido pelo usuário. O total é R$ 35.581,24. Os arquivos TXT selecionados não alteram esses números.
 
-A API de conversão TXT permanece disponível para compatibilidade, mas seu XLSX também contém somente esse fechamento fixo. O upload de TXT não altera os valores do arquivo.
+O Excel usa cabeçalhos destacados, linhas alternadas, valores monetários formatados, negativos em vermelho, total em destaque e configuração de impressão. A tela ainda mostra uma prévia do processamento dos TXT, mas essa prévia não faz parte da planilha demonstrativa.
