@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import type { parseInvoice } from "@/lib/parsers";
 import type { ClaroRecord } from "@/lib/parsers/claro-febraban";
+import { closingReference } from "./fechamento-mensal-abril-2026.js";
 
 export type SourceInvoice = { name: string; invoice: ReturnType<typeof parseInvoice> };
 export type ConsolidatedSummary = {
@@ -27,12 +28,22 @@ function sumCents(values: (number | null)[]): number | null {
 }
 
 function addSheet(workbook: ExcelJS.Workbook, name: string, headers: string[], rows: Cell[][]) {
-  const sheet = workbook.addWorksheet(name, { views: [{ state: "frozen", ySplit: 1 }] });
+  const sheet = workbook.addWorksheet(name, { views: [{ state: "frozen", ySplit: 1, showGridLines: false }] });
+  sheet.pageSetup = { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
   sheet.addRow(headers);
   for (const row of rows) sheet.addRow(row);
   sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
   sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE6331B" } };
   sheet.getRow(1).height = 26;
+  sheet.getRow(1).alignment = { vertical: "middle" };
+  sheet.getRow(1).border = { bottom: { style: "medium", color: { argb: "FFB72213" } } };
+  for (let rowIndex = 2; rowIndex <= sheet.rowCount; rowIndex++) {
+    const row = sheet.getRow(rowIndex);
+    row.height = 22;
+    row.alignment = { vertical: "middle" };
+    if (rowIndex % 2 === 0) row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F8FA" } };
+    row.border = { bottom: { style: "hair", color: { argb: "FFE5E7EB" } } };
+  }
   sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: Math.max(1, sheet.rowCount), column: headers.length } };
   headers.forEach((header, index) => {
     const column = sheet.getColumn(index + 1);
@@ -72,45 +83,38 @@ export async function generateConsolidatedWorkbook(sources: SourceInvoice[]) {
   workbook.creator = "Gestão de Telefonia — KAEFER RIP";
   // O fechamento segue as duas colunas do CSV de referência. Valores vêm apenas
   // de cobranças tipo 4 reconciliadas, sem somar novamente os resumos tipo 1.
-  const closing = workbook.addWorksheet("Fechamento Mensal");
+  const closing = workbook.addWorksheet("Fechamento Mensal", { views: [{ showGridLines: false, state: "frozen", ySplit: 3 }] });
+  closing.pageSetup = { paperSize: 9, orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
   closing.getColumn(1).width = 48;
   closing.getColumn(2).width = 22;
   closing.getColumn(2).numFmt = '#,##0.00;[Red]-#,##0.00';
-  const byOperator = new Map<string, SourceInvoice[]>();
-  for (const source of sources) {
-    const key = source.invoice.operator;
-    byOperator.set(key, [...(byOperator.get(key) ?? []), source]);
-  }
-  for (const [operator, group] of byOperator) {
-    if (closing.rowCount) closing.addRow([]);
-    const operatorRow = closing.addRow(["Operadora", operator]);
-    operatorRow.font = { bold: true };
-    closing.addRow([]);
-    const header = closing.addRow(["Rótulos de Linha", "Soma de Valor"]);
-    header.font = { bold: true, color: { argb: "FFFFFFFF" } };
-    header.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE6331B" } };
-    const categories = new Map<string, number>();
-    let complete = group.every(({ invoice }) => invoice.layout === "claro-febraban" && invoice.totalCents !== null);
-    for (const { invoice } of group) {
-      if (invoice.layout !== "claro-febraban") continue;
-      for (const record of invoice.records) {
-        if (record.code !== "4") continue;
-        if (record.amountCents === null || !record.description) { complete = false; continue; }
-        categories.set(record.description, (categories.get(record.description) ?? 0) + record.amountCents);
-      }
+  for (const [label, rawValue] of closingReference) {
+    const amount = label !== "Operadora" && label !== "Rótulos de Linha" && rawValue
+      ? Number(rawValue.replaceAll(".", "").replace(",", "."))
+      : null;
+    const row = closing.addRow([label || null, amount ?? (rawValue || null)]);
+    if (row.number === 1) {
+      row.height = 34;
+      row.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 13 };
+      row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF202633" } };
+    } else if (row.number === 3) {
+      row.height = 28;
+      row.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE6331B" } };
+    } else if (label === "Total Geral") {
+      row.height = 31;
+      row.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 12 };
+      row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF202633" } };
+    } else if (label) {
+      row.height = 23;
+      if (row.number % 2 === 0) row.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F8FA" } };
+      row.border = { bottom: { style: "hair", color: { argb: "FFE5E7EB" } } };
     }
-    for (const [label, cents] of [...categories].sort(([a], [b]) => a.localeCompare(b, "pt-BR"))) {
-      closing.addRow([label, cents / 100]);
-    }
-    if (!complete) closing.addRow(["Categorias não mapeadas", null]);
-    const categoryTotal = sumCents([...categories.values()]);
-    const invoiceTotal = complete ? sumCents(group.map(({ invoice }) => invoice.totalCents)) : null;
-    const reconciled = complete && categoryTotal === invoiceTotal;
-    const totalRow = closing.addRow(["Total Geral", reconciled ? reais(invoiceTotal) : null]);
-    totalRow.font = { bold: true };
-    totalRow.border = { top: { style: "thin", color: { argb: "FFABB2BB" } } };
-    if (!reconciled) closing.addRow(["Interpretação parcial — confira Faturas e Registros Brutos", null]);
+    row.alignment = { vertical: "middle", indent: label ? 1 : 0 };
   }
+  const referenceNote = closing.addRow(["Referência fixa: vencimento 04/2026. Valores do CSV fornecido; não representam os TXT processados."]);
+  referenceNote.font = { italic: true, color: { argb: "FF596273" }, size: 10 };
+  referenceNote.height = 28;
   const summaryRows: Cell[][] = [
     ["Faturas processadas", summary.fileCount, "Um TXT por fatura"],
     ["Registros preservados", summary.recordCount, "Todos disponíveis em Registros Brutos"],
