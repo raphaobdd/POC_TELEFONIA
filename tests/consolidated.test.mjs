@@ -6,6 +6,7 @@ import ExcelJS from "exceljs";
 import { parseClaroFebraban } from "../src/lib/parsers/claro-febraban.ts";
 import { parseVivo } from "../src/lib/parsers/vivo.ts";
 import { generateConsolidatedWorkbook, summarizeInvoices } from "../src/lib/excel/generate-consolidated-workbook.ts";
+import { closingReference } from "../src/lib/excel/fechamento-mensal-abril-2026.js";
 
 const path = process.env.CLARO_REFERENCE_TXT ?? resolve("..", "fwdfaturaskaefergestodetelefonia", "874990746_111360636_2026_08_53_Febraban.txt");
 const available = existsSync(path);
@@ -26,7 +27,7 @@ test("sintetiza gastos por linha, cobrança sem linha e total reconciliado", { s
   const { buffer } = await generateConsolidatedWorkbook(source);
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer);
-  assert.equal(workbook.worksheets.length, 9);
+  assert.equal(workbook.worksheets.length, 1);
   const closing = workbook.getWorksheet("Fechamento Mensal");
   assert.equal(closing.getCell("A1").value, "Operadora");
   assert.equal(closing.getCell("B1").value, "VIVO - MÓVEL");
@@ -38,11 +39,13 @@ test("sintetiza gastos por linha, cobrança sem linha e total reconciliado", { s
   assert.equal(closing.getRow(totalRow).getCell(2).value, 35581.24);
   assert.equal(closingRows.includes("Multa"), true);
   assert.equal(closing.getCell("B7").value, -4782);
-  assert.match(String(closing.getRow(totalRow + 1).getCell(1).value), /Referência fixa/);
-  assert.equal(workbook.getWorksheet("Síntese").getRow(9).getCell(2).value, 1369.4);
-  assert.equal(workbook.getWorksheet("Linhas Telefônicas").rowCount, 58);
-  assert.equal(workbook.getWorksheet("Registros Brutos").rowCount, 3210);
-  assert.equal(workbook.getWorksheet("Multas").rowCount, 1);
+  assert.equal(closing.rowCount, closingReference.length);
+  closingReference.forEach(([label, rawValue], index) => {
+    const row = closing.getRow(index + 1);
+    assert.equal(row.getCell(1).value, label || null);
+    const expected = index === 0 || index === 2 ? rawValue : rawValue ? Number(rawValue.replaceAll(".", "").replace(",", ".")) : null;
+    assert.equal(row.getCell(2).value, expected);
+  });
 });
 
 test("identifica multa apenas por descrição explícita sem somá-la de novo ao total", { skip: !available }, () => {

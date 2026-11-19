@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     return new Response(new Uint8Array(buffer), {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": 'attachment; filename="gestao-telefonia-consolidado.xlsx"',
+        "Content-Disposition": 'attachment; filename="FechamentoMensal_RIP_Vencimento_2026-04.xlsx"',
         "X-Conversion-Metadata": encodeURIComponent(JSON.stringify(metadata)),
       },
     });
